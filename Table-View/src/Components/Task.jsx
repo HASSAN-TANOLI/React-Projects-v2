@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
 
 const Task = () => {
   const [showModal, setShowModal] = useState(false);
@@ -192,22 +194,29 @@ const Task = () => {
 
       {/* Display form submissions */}
       <div className="flex justify-between items-center flex-col md:flex-row lg:flex-row py-10 my-6 gap-8">
-        <div className="w-full md:w-1/4 lg:w-1/4 border border-gray-400 rounded-md min-h-lvh py-2 px-1">
-          <h1>Todo</h1>
+        <div className="w-full md:w-1/4 lg:w-1/4 border  border-gray-400 border-opacity-30 bg-slate-300 rounded-md min-h-lvh py-2 px-1">
           {formSubmissions.map((formData, index) => (
-            <div key={index} className="shadow-lg p-3 m-3 rounded-lg">
-              <h1 className="font-serif text-md font-medium">
-                Task Title: {formData.title}
-              </h1>
-              <h4 className="font-serif text-md font-medium">
-                Total SP: {formData.storyPoint}
-              </h4>
-              <h5 className="font-serif text-md font-medium">
-                Assign To: {formData.assignTo}
-              </h5>
-              <p className="font-serif text-md font-medium">
-                Description: {formData.description}
+            <div key={index} className="shadow-lg p-3 m-1 rounded-lg bg-white">
+              <div className="flex justify-between items-center">
+                <h1 className="font-sans text-lg font-medium">
+                  {formData.title}
+                </h1>
+                <FontAwesomeIcon icon={faEllipsisVertical} size="lg" />
+              </div>
+
+              <p className="font-serif text-sm font-medium text-left py-2">
+                {formData.description}
               </p>
+
+              <hr className="mt-6 " />
+              <div className="flex justify-between items-center py-4">
+                <h4 className="font-sans text-sm font-medium">
+                  Total SP: {formData.storyPoint}
+                </h4>
+                <h5 className="font-serif text-sm font-medium">
+                  Assign To: {formData.assignTo}
+                </h5>
+              </div>
             </div>
           ))}
         </div>
