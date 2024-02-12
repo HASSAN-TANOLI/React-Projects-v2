@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
 
@@ -9,15 +9,53 @@ const Task = () => {
   const [assignTo, setAssignTo] = useState("");
   const [description, setDescription] = useState("");
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+  const menuRefs = useRef([]);
   const [formSubmissions, setFormSubmissions] = useState(() => {
     const savedFormSubmissions = localStorage.getItem("formSubmissions");
     return savedFormSubmissions ? JSON.parse(savedFormSubmissions) : [];
   });
 
+  const generateUniqueId = () => {
+    return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+  };
+
+  const id = generateUniqueId();
+
+  const handleClickDelete = () => {
+    console.log("Product ID of selected delete item:", id);
+    const updatedFormSubmissions = formSubmissions.filter(
+      (formData) => formData.id !== id
+    );
+    setFormSubmissions(updatedFormSubmissions);
+    console.log(formSubmissions);
+  };
+
+  const handleClickOutside = (event, index) => {
+    if (
+      menuRefs.current[index] &&
+      !menuRefs.current[index].contains(event.target)
+    ) {
+      toggleMenu(index);
+    }
+  };
+
+  const toggleMenu = (index) => {
+    const updatedFormSubmissions = formSubmissions.map((formData, i) => {
+      if (i === index) {
+        return { ...formData, showMenu: !formData.showMenu };
+      } else {
+        return formData;
+      }
+    });
+    setFormSubmissions(updatedFormSubmissions);
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
     const formData = {
+      id,
       title,
       storyPoint,
       assignTo,
@@ -43,6 +81,14 @@ const Task = () => {
   const handleAssignToChange = (e) => {
     setAssignTo(e.target.value);
   };
+
+  useEffect(() => {
+    document.addEventListener("click", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     const savedFormSubmissions = localStorage.getItem("formSubmissions");
@@ -194,28 +240,65 @@ const Task = () => {
 
       {/* Display form submissions */}
       <div className="flex justify-between items-center flex-col md:flex-row lg:flex-row py-10 my-6 gap-8">
-        <div className="w-full md:w-1/4 lg:w-1/4 border  border-gray-400 border-opacity-30 bg-slate-300 rounded-md min-h-lvh py-2 px-1">
+        <div className="w-full md:w-1/4 lg:w-1/4 border flex flex-col gap-4  border-gray-400 border-opacity-30 bg-slate-300 rounded-md min-h-lvh py-2 px-1">
           {formSubmissions.map((formData, index) => (
-            <div key={index} className="shadow-lg p-3 m-1 rounded-lg bg-white">
-              <div className="flex justify-between items-center">
-                <h1 className="font-sans text-lg font-medium">
-                  {formData.title}
-                </h1>
-                <FontAwesomeIcon icon={faEllipsisVertical} size="lg" />
-              </div>
+            <div key={index} ref={(el) => (menuRefs.current[index] = el)}>
+              <div className="shadow-lg p-3 m-1 rounded-lg bg-white relative">
+                <div className="flex justify-between items-center">
+                  <h1 className="font-sans text-lg font-medium">
+                    {formData.title}
+                  </h1>
+                  <button
+                    onClick={() => {
+                      event.stopPropagation();
+                      toggleMenu(index);
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faEllipsisVertical} size="lg" />
+                  </button>
 
-              <p className="font-serif text-sm font-medium text-left py-2">
-                {formData.description}
-              </p>
+                  {formData.showMenu && (
+                    <div className="absolute origin-bottom-right bottom-0 right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
+                      <div
+                        className="py-1"
+                        role="menu"
+                        aria-orientation="vertical"
+                        aria-labelledby="options-menu"
+                      >
+                        <button
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                          role="menuitem"
+                        >
+                          Update
+                        </button>
+                        <button
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                          role="menuitem"
+                          onClick={handleClickDelete}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
-              <hr className="mt-6 " />
-              <div className="flex justify-between items-center py-4">
-                <h4 className="font-sans text-sm font-medium">
-                  Total SP: {formData.storyPoint}
-                </h4>
-                <h5 className="font-serif text-sm font-medium">
-                  Assign To: {formData.assignTo}
-                </h5>
+                <p className="font-serif text-sm font-medium text-left py-2">
+                  {formData.description}
+                </p>
+
+                <hr className="mt-6 " />
+                <div className="flex justify-between items-center py-4 gap-2">
+                  <h4 className="font-sans text-sm font-medium">
+                    Total SP: <span>{formData.storyPoint}</span>
+                  </h4>
+                  <h5 className="font-serif text-sm font-medium">
+                    Assign To:{" "}
+                    <span className="p-2 rounded-full bg-blue-300">
+                      {formData.assignTo}
+                    </span>
+                  </h5>
+                </div>
               </div>
             </div>
           ))}
