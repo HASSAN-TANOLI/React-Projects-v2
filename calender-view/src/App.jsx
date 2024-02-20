@@ -19,10 +19,15 @@ const App = () => {
   }, [tasks]);
 
   const onSelect = (newValue) => {
-    setValue(newValue);
-    setSelectedValue(newValue);
-    setShowModal(true);
-    setClickedDate(newValue.format("YYYY-MM-DD"));
+    if (
+      newValue.month() === value.month() &&
+      newValue.year() === value.year()
+    ) {
+      setValue(newValue);
+      setSelectedValue(newValue);
+      setShowModal(true);
+      setClickedDate(newValue.format("YYYY-MM-DD"));
+    }
   };
 
   useEffect(() => {
@@ -53,7 +58,6 @@ const App = () => {
     }
     return null;
   };
-
   return (
     <>
       <div className="max-w-7xl mx-auto my-10 px-8 py-8 border border-black-700">
